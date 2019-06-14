@@ -47,6 +47,11 @@
                         bear
                     </button>
                 </div>
+                <div class="col-md-4" style="float: left;">
+                    <button id="lyric" type="button" class="btn btn-default" style="display: inline-block;">
+                        lyric
+                    </button>
+                </div>
             </div>
         </div>
     </div>
@@ -242,6 +247,35 @@
                     console.log(txHash)
                 }
             }
+            lyric.onclick = async function () {
+                console.log('before builder ')
+                console.log('private key: ' + ppk.value)
+                console.log('wallet address: ' + address.value)
+
+                var wallet = IconWallet.loadPrivateKey(ppk.value);
+
+                for (var i = 0; i < 200; i++) {
+                    var callTransactionBuilder = new IconBuilder.CallTransactionBuilder()
+                    var callTransactionData = callTransactionBuilder
+                        .from(address.value)
+                        .to("cxd47f4917e81e11b6b91dfea0a5a3775a5596726c")
+                        .nid(IconConverter.toBigNumber(1))
+                        .nonce(IconConverter.toBigNumber(1))
+                        .timestamp((new Date()).getTime() * 1000)
+                        .stepLimit(IconConverter.toBigNumber('1000000'))
+                        .version(IconConverter.toBigNumber('3'))
+                        .method('enroll')
+                        .params({
+                            Song: 'hi' 
+                        })
+                        .build()
+                    console.log("for loop : " + i)
+                    var signedTransaction = new IconService.SignedTransaction(callTransactionData, wallet)
+                    var txHash = await iconService.sendTransaction(signedTransaction).execute();
+                    console.log(txHash)
+                }
+            }
+            
 
 
 
