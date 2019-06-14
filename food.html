@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Food</title>
+    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.2/css/bootstrap.min.css" rel="stylesheet">
+</head>
+
+<body>
+    <div class="container">
+        <div class="header" style="text-align: center;">
+            <nav>
+                <ul class="nav nav-pills pull-left">
+                    <li role="presentation">
+                        <div class="btn-group">
+                            <button id="request-address" type="button">
+                                wallet
+                            </button>
+                        </div>
+                    </li>
+                    <li role="presentation">
+                        <p id="response-address" class="navbar-text">address</p>
+                    </li>
+                </ul>
+            </nav>
+            <div style="display: inline-block;"><h1>Food<br>block</h1></div>
+        </div>
+        <div class="container theme-showcase" role="main">
+            <div class="row">
+                <div class="col-md-12" style="height: 300px; text-align: center;"></div>
+                <div class="col-md-12" style="height: 100px; text-align: center;">
+                    <h2>좋아하는 음식을 블록체인에 남겨남겨~~</h2>
+                </div>
+                <div class="col-md-4"></div>
+                <div class="col-md-4">
+                    <input id="food" type="text" class="form-control" placeholder="이름" style="color: brown;"></input>
+                </div>
+                <div class="col-md-4"></div>
+                <div class="col-md-12" style="text-align: center;">
+                </div>
+                <div class="col-md-4"></div>
+                <div class="col-md-4"></div>
+                <div class="col-md-12" style="text-align: center;">
+                    <button id="request-transaction" type="button"class="btn btn-default" style="margin: 20px; color: brown;">
+                        남기기
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/gh/icon-project/icon-sdk-js@latest/build/icon-sdk-js.web.min.js"></script>
+    <script>
+        var IconService = window['icon-sdk-js']
+
+        const { HttpProvider, IconBuilder, IconWallet, IconAmount, IconConverter } = IconService
+        const provider = new HttpProvider('https://ctz.solidwallet.io/api/v3')
+        const iconService = new IconService(provider)
+
+        var requestAddress = document.getElementById("request-address")
+        var responseAddress = document.getElementById("response-address")
+        var requestTransaction = document.getElementById("request-transaction")
+
+        var fromAddress = ''
+
+        window.addEventListener("ICONEX_RELAY_RESPONSE", eventHandler, false);
+        function eventHandler(event) {
+            var type = event.detail.type
+            var payload = event.detail.payload
+            switch (type) {
+                case "RESPONSE_ADDRESS":
+                    fromAddress = payload
+                    responseAddress.innerHTML = payload;
+                    break
+                case "RESPONSE_JSON-RPC":
+                    console.log(typeof payload.result)
+                    console.log(payload.result)
+
+                    setTimeout(function () {
+                        alert('complete')
+                    }, 2000)
+                    break
+                default:
+                    break
+            }
+        }
+
+        requestAddress.onclick = function () {
+            window.dispatchEvent(new CustomEvent('ICONEX_RELAY_REQUEST', {
+                detail: {
+                    type: 'REQUEST_ADDRESS'
+                }
+            }))
+        }
+
+        requestTransaction.onclick = async function () {
+            var food = document.getElementById("food").value
+            var callTransactionBuilder = new IconBuilder.CallTransactionBuilder()
+            var callTransactionData = callTransactionBuilder
+                .from(fromAddress)
+                .to("cx417acd6f215795f9fa5bb4d1ccfc6446652cf2d0")
+                .nid(IconConverter.toBigNumber(1))
+                .nonce(IconConverter.toBigNumber(1))
+                .timestamp((new Date()).getTime() * 1000)
+                .stepLimit(IconConverter.toBigNumber('10000000'))
+                .version(IconConverter.toBigNumber('3'))
+                .method('bet')
+                .params({
+                    bet: food
+                })
+                .build()
+            scoreData = JSON.stringify({
+                "jsonrpc": "2.0",
+                "method": "icx_sendTransaction",
+                "params":
+                    IconConverter.toRawTransaction(callTransactionData),
+                "id": 1
+            })
+
+            var parsed = JSON.parse(scoreData)
+            await window.dispatchEvent(new CustomEvent('ICONEX_RELAY_REQUEST', {
+                detail: {
+                    type: 'REQUEST_JSON-RPC',
+                    payload: parsed
+                }
+            }))
+            console.log('after transaction')
+        }
+    </script>
+</body>
+
+</html>
+
+<style>
+    @import url('https://fonts.googleapis.com/css?family=Jua&display=swap');
+    body {
+        background-image: url('food1.png'),
+            url('food2.jpeg'),
+            url('food3.png');
+        background-color: rgb(245, 247, 159);
+        background-position: left, center, right;
+        background-repeat: no-repeat;
+        font-family: 'Jua', sans-serif;
+        color: brown;
+    }
+</style>
