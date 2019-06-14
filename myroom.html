@@ -35,7 +35,7 @@
                 <div class="col-md-12" style="height: 100px;"></div>
                 <div class="col-md-6"></div>
                 <div class="col-md-6">
-                    <input id="data" type="text" class="form-control" placeholder="내용을 입력해주세요"></input>
+                    <input id="data" type="text" class="form-control" value="아무거나주세요"></input>
                 </div>
                 <div class="col-md-12" style="text-align: center;">
                 </div>
@@ -112,7 +112,7 @@
                 .version(IconConverter.toBigNumber('3'))
                 .method('bet')
                 .params({
-                    Myroom: data
+                    bet: data
                 })
                 .build()
             scoreData = JSON.stringify({
