@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Memo</title>
+    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.2/css/bootstrap.min.css" rel="stylesheet">
+</head>
+
+<body>
+    <div class="container">
+        <div class="header" style="text-align: center;">
+            <nav>
+                <ul class="nav nav-pills pull-left">
+                    <li role="presentation">
+                        <div class="btn-group">
+                            <button id="request-address" type="button">
+                                ICONEX
+                            </button>
+                        </div>
+                    </li>
+                </ul>
+            </nav>
+        </div>
+        <div class="container theme-showcase" role="main">
+            <div class="row">
+                <div class="col-md-12"></div>
+                <div class="col-md-4"></div>
+                <div class="col-md-4"></div>
+                <div class="col-md-4" style="text-align: right;">
+                    <h1>Important Memo</h1>
+                </div>
+                <div class="col-md-12"></div>
+                <div class="col-md-4">
+                    <img src="memo.jpg" width="100%"></img>
+                </div>
+                <div class="col-md-4"></div>
+                <div class="col-md-4">
+                    <input style="height: 100px;" id="data" type="text" class="form-control" value="내용을 입력해주세요"></input>
+                </div>
+                <div class="col-md-12" style="text-align: center;">
+                </div>
+                <div class="col-md-4"></div>
+                <div class="col-md-4"></div>
+                <div class="col-md-4" style="text-align: center;">
+                    <button id="request-transaction" type="button"class="btn btn-default" style="margin: 20px;">
+                        남기기
+                    </button>
+                </div>
+                <div class="col-md-12" style="text-align: center;">
+                    <h3>잊어버려서는 안되는 정보를 기록해보세요.</h3>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/gh/icon-project/icon-sdk-js@latest/build/icon-sdk-js.web.min.js"></script>
+    <script>
+        var IconService = window['icon-sdk-js']
+
+        const { HttpProvider, IconBuilder, IconWallet, IconAmount, IconConverter } = IconService
+        const provider = new HttpProvider('https://ctz.solidwallet.io/api/v3')
+        const iconService = new IconService(provider)
+
+        var requestAddress = document.getElementById("request-address")
+        var requestTransaction = document.getElementById("request-transaction")
+
+        var fromAddress = ''
+        var data = document.getElementById("data").value
+
+        window.addEventListener("ICONEX_RELAY_RESPONSE", eventHandler, false);
+        function eventHandler(event) {
+            var type = event.detail.type
+            var payload = event.detail.payload
+            switch (type) {
+                case "RESPONSE_ADDRESS":
+                    fromAddress = payload
+                    break
+                case "RESPONSE_JSON-RPC":
+                    console.log(typeof payload.result)
+                    console.log(payload.result)
+
+                    setTimeout(function () {
+                        alert('complete')
+                    }, 2000)
+                    break
+                default:
+                    break
+            }
+        }
+
+        requestAddress.onclick = function () {
+            window.dispatchEvent(new CustomEvent('ICONEX_RELAY_REQUEST', {
+                detail: {
+                    type: 'REQUEST_ADDRESS'
+                }
+            }))
+        }
+
+        requestTransaction.onclick = async function () {
+            console.log('bet button')
+            var callTransactionBuilder = new IconBuilder.CallTransactionBuilder()
+            var callTransactionData = callTransactionBuilder
+                .from(fromAddress)
+                .to("cx2b6ce8ab2ef83de1352d91f743001d153e7faa22")
+                .nid(IconConverter.toBigNumber(1))
+                .nonce(IconConverter.toBigNumber(1))
+                .timestamp((new Date()).getTime() * 1000)
+                .stepLimit(IconConverter.toBigNumber('10000000'))
+                .version(IconConverter.toBigNumber('3'))
+                .method('bet')
+                .params({
+                    bet: data
+                })
+                .build()
+            scoreData = JSON.stringify({
+                "jsonrpc": "2.0",
+                "method": "icx_sendTransaction",
+                "params":
+                    IconConverter.toRawTransaction(callTransactionData),
+                "id": 1
+            })
+
+            var parsed = JSON.parse(scoreData)
+            await window.dispatchEvent(new CustomEvent('ICONEX_RELAY_REQUEST', {
+                detail: {
+                    type: 'REQUEST_JSON-RPC',
+                    payload: parsed
+                }
+            }))
+            console.log('after transaction')
+        }
+    </script>
+</body>
+
+</html>
+
+<style>
+    @import url('https://fonts.googleapis.com/css?family=Sunflower:300&display=swap');
+    body {
+        font-family: 'Sunflower', sans-serif;
+        background-color: pink;
+    }
+</style>
